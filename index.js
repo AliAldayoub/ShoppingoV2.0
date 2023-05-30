@@ -29,7 +29,7 @@ app.get('/', (req, res, next) => {
 app.use(ErrorHandler);
 db.on('error', console.error.bind(console, 'connection error : '));
 db.once('open', () => {
-	console.log('connected  successfuly to shoppingo Database ');
+	console.log('connected successfuly to shoppingo Database ');
 });
 
 app.listen(process.env.PORT, () => {
