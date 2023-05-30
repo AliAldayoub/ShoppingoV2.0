@@ -22,7 +22,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
 
 // use routes
-app.use('/api/v1.0/auth', authRoute);
+app.use('/api/v2.0/auth', authRoute);
 app.get('/', (req, res, next) => {
 	res.send('hello from Shoppingo Site');
 });
