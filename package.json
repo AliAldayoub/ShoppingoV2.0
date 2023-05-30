@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node run index.js",
-    "dev":"nodemon run index.js"
+    "dev": "nodemon run index.js"
   },
   "repository": {
     "type": "git",
@@ -33,7 +33,6 @@
     "helmet": "^7.0.0",
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^7.2.1",
-    "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.2",
     "nodemon": "^2.0.22"
