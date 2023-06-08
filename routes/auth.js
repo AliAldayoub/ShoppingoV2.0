@@ -13,6 +13,8 @@ router.post('/login', authController.login);
 
 router.put('/updateInfo', authMiddleware.authenticateUser, upload.single('imgURL'), authController.updateInfo);
 
+router.post('/updateUserToAdmin', authController.updateUserToAdmin);
 router.post('/resetPassword', authController.resetPassword);
 router.get('/getUserInfo', authMiddleware.authenticateUser, authController.getUserInfo);
+
 module.exports = router;

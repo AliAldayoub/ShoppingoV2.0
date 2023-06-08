@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const Seller = require('../models/seller');
 const jwt = require('jsonwebtoken');
 const { uploadImage } = require('../util/backblazeB2');
 
@@ -58,7 +59,36 @@ exports.login = async (req, res, next) => {
 
 exports.updateInfo = async (req, res, next) => {
 	try {
-		res.status(201).json({ success: true, message: 'تم تعديل البيانات بنجاح', user });
+		const userId = req.user._id;
+		const user = await User.findById(userId);
+
+		const { fullName, storeName, location, paymentMethod, wepayCode, oldPassword, newPassword } = req.body;
+		const isPasswordValid = await user.validatePassword(oldPassword);
+		if (!isPasswordValid) {
+			return res.status(200).json({ success: false, message: 'كلمة السر غير صحيحة لم يتم تعديل البيانات' });
+		}
+		const imgURL = req.file ? req.file : undefined;
+		let fileURL;
+		if (imgURL) {
+			fileURL = await uploadImage(imgURL);
+		}
+		fileURL ? (user.imgURL = fileURL) : null;
+		fullName ? (user.fullName = fullName) : null;
+		newPassword ? (user.password = newPassword) : null;
+
+		await user.save();
+		let seller;
+		if (user.role === 'seller') {
+			seller = await Seller.findOneAndUpdate(
+				{ user: userId },
+				{ storeName, location, paymentMethod, wepayCode },
+				{
+					new: true
+				}
+			);
+			await seller.save();
+		}
+		res.status(201).json({ success: true, message: 'تم تعديل البيانات بنجاح', user, seller });
 	} catch (error) {
 		next(error);
 	}

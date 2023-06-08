@@ -30,7 +30,7 @@ exports.authenticateAdmin = (req, res, next) => {
 };
 
 exports.authenticateSeller = (req, res, next) => {
-	if (req.user.role !== 'seller' || req.user.role !== 'admin') {
+	if (req.user.role !== 'seller' && req.user.role !== 'admin') {
 		return res
 			.status(403)
 			.json({ message: 'Forbidden: you do not have permission to perform this action as a Seller' });

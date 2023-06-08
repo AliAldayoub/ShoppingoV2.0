@@ -9,20 +9,20 @@ app.use(
 		credentials: true
 	})
 );
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ extended: true, limit: '5mb' }));
+app.use(helmet());
 
 // start routes
 const ErrorHandler = require('./middleware/ErrorHandler');
 const db = require('./util/database');
 const authRoute = require('./routes/auth');
+const shopRoute = require('./routes/shop');
+const storeRoute = require('./routes/store');
 
-// end routes
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(helmet());
-
-// use routes
 app.use('/api/v2.0/auth', authRoute);
+app.use('/api/v2.0/shop', shopRoute);
+app.use('/api/v2.0/store', storeRoute);
 app.get('/', (req, res, next) => {
 	res.send('hello from Shoppingo Site');
 });
