@@ -98,7 +98,11 @@ exports.getUserInfo = async (req, res, next) => {
 	try {
 		const userId = req.user._id;
 		const user = await User.findById(userId, '-password');
-		res.status(200).json({ success: true, message: 'تم جلب بيانات المستخدم بنجاح', user });
+		let seller;
+		if (user.role == 'seller') {
+			seller = await Seller.findOne({ user: userId });
+		}
+		res.status(200).json({ success: true, message: 'تم جلب بيانات المستخدم بنجاح', user, seller });
 	} catch (error) {
 		next(error);
 	}
