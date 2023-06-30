@@ -63,6 +63,7 @@ exports.updateInfo = async (req, res, next) => {
 		const user = await User.findById(userId);
 
 		const { fullName, storeName, location, paymentMethod, wepayCode, oldPassword, newPassword } = req.body;
+		const methods = JSON.parse(paymentMethod);
 		const isPasswordValid = await user.validatePassword(oldPassword);
 		if (!isPasswordValid) {
 			return res.status(200).json({ success: false, message: 'كلمة السر غير صحيحة لم يتم تعديل البيانات' });
@@ -81,7 +82,7 @@ exports.updateInfo = async (req, res, next) => {
 		if (user.role === 'seller') {
 			seller = await Seller.findOneAndUpdate(
 				{ user: userId },
-				{ storeName, location, paymentMethod, wepayCode },
+				{ storeName, location, paymentMethod: methods, wepayCode },
 				{
 					new: true
 				}
