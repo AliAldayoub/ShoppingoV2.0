@@ -25,5 +25,11 @@ router.put(
 	authMiddleware.authenticateAdmin,
 	storeController.sellerResponse
 );
+router.put(
+	'/sellerReject/:id',
+	authMiddleware.authenticateUser,
+	authMiddleware.authenticateAdmin,
+	storeController.sellerResponse
+);
 router.get('/getAllSeller', storeController.getAllSeller);
 module.exports = router;

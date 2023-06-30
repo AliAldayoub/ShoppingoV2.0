@@ -65,3 +65,13 @@ exports.getAllSeller = async (req, res, next) => {
 		next(error);
 	}
 };
+
+exports.sellerReject = async (req, res, next) => {
+	try {
+		const sellerId = req.params.id;
+		await Seller.findByIdAndDelete(sellerId);
+		res.status(200).json({ success: true, message: 'تم رفض و حذف الطلب ' });
+	} catch (error) {
+		next(error);
+	}
+};
