@@ -30,8 +30,7 @@ const sellerSchema = new Schema(
 		paymentMethod: [
 			{
 				type: String,
-				enum: [ 'wepay', 'on delivery' ],
-				default: 'on delivery'
+				enum: [ 'wepay', 'on delivery' ]
 			}
 		],
 		wepayCode: {
