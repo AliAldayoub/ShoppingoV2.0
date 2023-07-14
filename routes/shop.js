@@ -22,4 +22,5 @@ router.delete(
 	authMiddleware.authenticateSeller,
 	shopController.deleteProduct
 );
+router.post('/addReview/:id', authMiddleware.authenticateUser, shopController.addReview);
 module.exports = router;

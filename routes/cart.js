@@ -5,6 +5,9 @@ const cartController = require('../controllers/cart');
 
 const multer = require('multer');
 
-router.post('addItemToCart', authMiddleware.authenticateUser, cartController.addItemToCart);
+router.get('/getCart', authMiddleware.authenticateUser, cartController.getCart);
+router.post('/addItemToCart', authMiddleware.authenticateUser, cartController.addItemToCart);
+router.delete('/deleteItemFromCart/:id', authMiddleware.authenticateUser, cartController.deleteItemFromCart);
+router.delete('/deleteCartItems', authMiddleware.authenticateUser, cartController.deleteCartItems);
 
 module.exports = router;

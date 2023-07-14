@@ -1,13 +1,5 @@
-const User = require('../models/user');
-const Product = require('../models/product');
-const Seller = require('../models/seller');
-const Brand = require('../models/brand');
-const { uploadImage } = require('../util/backblazeB2');
-const tf = require('@tensorflow/tfjs');
-const fs = require('fs');
-const { recommender } = require('../util/recommender');
-const Review = require('../models/review');
 const Cart = require('../models/cart');
+const Order = require('../models/order');
 const { getCartDetails } = require('../util/cartMethods');
 
 exports.addItemToCart = async (req, res, next) => {
@@ -24,7 +16,7 @@ exports.addItemToCart = async (req, res, next) => {
 		} else {
 			const newCart = new Cart({
 				user: userId,
-				items: [ { product: productId, size, color, quantity } ]
+				items: [ { product: productId, size, color, quantity, price } ]
 			});
 			await newCart.save();
 		}
@@ -120,7 +112,7 @@ exports.getCart = async (req, res, next) => {
 			restItems,
 			restItemsPrice,
 			totalPrice
-		} = getCartDetails(cart);
+		} = await getCartDetails(cart);
 		res.status(200).json({
 			success: true,
 			message: 'تم جلب جميع المنتجات ضمن السلة',
@@ -141,6 +133,31 @@ exports.getCart = async (req, res, next) => {
 				restItems
 			}
 		});
+	} catch (error) {
+		next(error);
+	}
+};
+
+exports.deliveryOrder = async (req, res, next) => {
+	try {
+		const userId = req.user._id;
+		const { firstName, lastName, middleName, email, phoneNumber, city, address, products } = req.body;
+		const order = new Order({
+			user: userId,
+			deliveryStatus: false,
+			details: {
+				firstName,
+				lastName,
+				middleName,
+				email,
+				phoneNumber,
+				city,
+				address
+			},
+			products: products
+		});
+		order.save();
+		res.status(201).json({ success: true, message: 'تم اضافة الطلبية', order });
 	} catch (error) {
 		next(error);
 	}

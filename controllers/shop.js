@@ -7,9 +7,6 @@ const tf = require('@tensorflow/tfjs');
 const fs = require('fs');
 const { recommender } = require('../util/recommender');
 const Review = require('../models/review');
-const Cart = require('../models/cart');
-const { getCartDetails } = require('../util/cartMethods');
-
 function calculateDistance(lat1, lon1, lat2, lon2) {
 	const R = 6371; // Radius of the Earth in kilometers
 	const dLat = (lat2 - lat1) * (Math.PI / 180); // Convert to radians
@@ -111,9 +108,14 @@ exports.getAllProduct = async (req, res, next) => {
 				const existingPrice = existingProduct.price;
 
 				// Calculate the updated price based on discounts (if any)
-				const updatedPrice =
-					fixedDiscount !== undefined ? price - fixedDiscount : price * (1 - percentageDiscount / 100);
-
+				let updatedPrice;
+				if (fixedDiscount != null) {
+					updatedPrice = price - fixedDiscount;
+				} else if (percentageDiscount != null) {
+					updatedPrice = price * (1 - percentageDiscount / 100);
+				} else {
+					updatedPrice = price; // No discounts applied
+				}
 				// Compare the updated price with the existing price
 				if (updatedPrice < existingPrice) {
 					existingProduct.shippestProduct = product;
@@ -130,7 +132,27 @@ exports.getAllProduct = async (req, res, next) => {
 				uniqueProducts.push(newEntry);
 			}
 		}
+		// Calculate the mean rating for each brand
+		for (const product of uniqueProducts) {
+			const brandId = product.brand._id;
 
+			const meanRating = await Review.aggregate([
+				{ $match: { brand: brandId } },
+				{
+					$group: {
+						_id: '$brand',
+						averageRating: { $avg: '$rating' }
+					}
+				}
+			]);
+
+			if (meanRating.length > 0) {
+				product.meanRating = meanRating[0].averageRating;
+			} else {
+				// No reviews for the brand
+				product.meanRating = 0;
+			}
+		}
 		if (uniqueProducts.length > 0) {
 			return res.status(200).json({
 				success: true,
@@ -240,6 +262,7 @@ exports.getProduct = async (req, res, next) => {
 		next(error);
 	}
 };
+
 exports.deleteProduct = async (req, res, next) => {
 	const productId = req.params.id;
 
@@ -259,6 +282,31 @@ exports.deleteProduct = async (req, res, next) => {
 		}
 
 		res.status(200).json({ success: true, message: 'تم حذف المنتج بنجاح' });
+	} catch (error) {
+		next(error);
+	}
+};
+
+exports.addReview = async (req, res, next) => {
+	try {
+		const userId = req.user._id;
+		const brandId = req.params.id;
+		const value = req.body.value;
+
+		reviewExist = await Review.findOne({ user: userId, brand: brandId });
+
+		if (reviewExist) {
+			reviewExist.rating = parseInt(value);
+			await reviewExist.save();
+		} else {
+			const review = new Review({
+				user: userId,
+				brand: brandId,
+				rating: parseInt(value)
+			});
+			await review.save();
+		}
+		res.status(201).json({ success: true, message: 'تمت اضافة التقييم بنجاح' });
 	} catch (error) {
 		next(error);
 	}
