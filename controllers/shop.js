@@ -306,7 +306,20 @@ exports.addReview = async (req, res, next) => {
 			});
 			await review.save();
 		}
-		res.status(201).json({ success: true, message: 'تمت اضافة التقييم بنجاح' });
+
+		const meanRating = await Review.aggregate([
+			{ $match: { brand: brandId } },
+			{
+				$group: {
+					_id: '$brand',
+					averageRating: { $avg: '$rating' }
+				}
+			}
+		]);
+
+		res
+			.status(201)
+			.json({ success: true, message: 'تمت اضافة التقييم بنجاح', meanRating: meanRating.averageRating });
 	} catch (error) {
 		next(error);
 	}
