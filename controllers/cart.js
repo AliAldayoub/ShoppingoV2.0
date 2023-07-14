@@ -34,7 +34,13 @@ exports.deleteItemFromCart = async (req, res, next) => {
 			{ user: userId },
 			{ $pull: { items: { _id: itemId } } },
 			{ new: true }
-		);
+		).populate({
+			path: 'items.product',
+			populate: {
+				path: 'seller',
+				model: 'Seller'
+			}
+		});
 		if (cart.items.length === 0) {
 			return res.status(200).json({
 				success: false,
@@ -50,7 +56,7 @@ exports.deleteItemFromCart = async (req, res, next) => {
 			restItems,
 			restItemsPrice,
 			totalPrice
-		} = getCartDetails(cart);
+		} = await getCartDetails(cart);
 		res.status(201).json({
 			success: true,
 			message: 'تم حذف المنتج بنجاح',
