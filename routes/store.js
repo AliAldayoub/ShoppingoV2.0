@@ -32,4 +32,5 @@ router.put(
 	storeController.sellerResponse
 );
 router.get('/getAllSeller', storeController.getAllSeller);
+router.get('/getSellerProducts/:id', storeController.getSellerProducts);
 module.exports = router;

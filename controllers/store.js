@@ -1,5 +1,6 @@
 const User = require('../models/user');
 const Seller = require('../models/seller');
+const Product = require('../models/product');
 const { uploadImage } = require('../util/backblazeB2');
 
 exports.sellerRequest = async (req, res, next) => {
@@ -71,6 +72,29 @@ exports.sellerReject = async (req, res, next) => {
 		const sellerId = req.params.id;
 		await Seller.findByIdAndDelete(sellerId);
 		res.status(200).json({ success: true, message: 'تم رفض و حذف الطلب ' });
+	} catch (error) {
+		next(error);
+	}
+};
+
+exports.getSellerProducts = async (req, res, next) => {
+	try {
+		const sellerId = req.params.id;
+		const products = await Product.find({ seller: sellerId });
+		const seller = await Seller.findById(sellerId);
+		if (products.length > 0) {
+			res.status(200).json({
+				success: true,
+				message: 'تم جلب جميع منتجات هذا المتجر',
+				products,
+				seller
+			});
+		} else {
+			res.status(200).json({
+				success: false,
+				message: 'لا يوجد اي منتجات لهذا المتجر'
+			});
+		}
 	} catch (error) {
 		next(error);
 	}

@@ -96,7 +96,12 @@ exports.getCart = async (req, res, next) => {
 				model: 'Seller'
 			}
 		});
-
+		if (!cart) {
+			return res.status(200).json({
+				success: false,
+				message: 'لم تقم بإضافة اي منتج ولا يوجد شيء لعرضه'
+			});
+		}
 		if (cart.items.length === 0) {
 			return res.status(200).json({
 				success: false,

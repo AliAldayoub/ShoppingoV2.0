@@ -15,6 +15,7 @@ router.post(
 	shopController.addProduct
 );
 router.get('/getAllProduct', shopController.getAllProduct);
+router.get('/getOffers', shopController.getOffers);
 router.get('/getProduct/:id', authMiddleware.authenticateUser, shopController.getProduct);
 router.delete(
 	'/deleteProduct/:id',

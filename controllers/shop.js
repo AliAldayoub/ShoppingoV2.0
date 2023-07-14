@@ -311,3 +311,25 @@ exports.addReview = async (req, res, next) => {
 		next(error);
 	}
 };
+
+exports.getOffers = async (req, res, next) => {
+	try {
+		const products = await Product.find({
+			$or: [ { fixedDiscount: { $ne: null } }, { percentageDiscount: { $ne: null } } ]
+		});
+		if (products.length > 0) {
+			res.status(200).json({
+				success: true,
+				message: 'تم جلب جميع المنتجات التي تملك عرض ',
+				products
+			});
+		} else {
+			res.status(200).json({
+				success: false,
+				message: 'لا يوجد اي منتجات عليها عرض او تخفيض'
+			});
+		}
+	} catch (error) {
+		next(error);
+	}
+};
