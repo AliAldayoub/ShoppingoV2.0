@@ -286,40 +286,33 @@ exports.deleteProduct = async (req, res, next) => {
 		next(error);
 	}
 };
-
 exports.addReview = async (req, res, next) => {
 	try {
 		const userId = req.user._id;
 		const brandId = req.params.id;
 		const value = req.body.value;
 
-		reviewExist = await Review.findOne({ user: userId, brand: brandId });
+		const review = await Review.findOneAndUpdate(
+			{ user: userId, brand: brandId },
+			{ rating: parseInt(value) },
+			{ upsert: true, new: true }
+		);
 
-		if (reviewExist) {
-			reviewExist.rating = parseInt(value);
-			await reviewExist.save();
-		} else {
-			const review = new Review({
-				user: userId,
-				brand: brandId,
-				rating: parseInt(value)
-			});
-			await review.save();
+		// Recalculate meanRating
+		const meanRating = await Review.find({ brand: brandId }).select('rating');
+
+		let sum = 0;
+		for (const review of meanRating) {
+			sum += review.rating;
 		}
 
-		const meanRating = await Review.aggregate([
-			{ $match: { brand: brandId } },
-			{
-				$group: {
-					_id: '$brand',
-					averageRating: { $avg: '$rating' }
-				}
-			}
-		]);
+		const averageRating = sum / meanRating.length;
 
-		res
-			.status(201)
-			.json({ success: true, message: 'تمت اضافة التقييم بنجاح', meanRating: meanRating.averageRating });
+		res.status(201).json({
+			success: true,
+			message: 'تمت اضافة التقييم بنجاح',
+			meanRating: averageRating
+		});
 	} catch (error) {
 		next(error);
 	}
@@ -330,11 +323,48 @@ exports.getOffers = async (req, res, next) => {
 		const products = await Product.find({
 			$or: [ { fixedDiscount: { $ne: null } }, { percentageDiscount: { $ne: null } } ]
 		});
+		let productsWithRating = [];
 		if (products.length > 0) {
+			for (const product of products) {
+				const brandId = product.brand;
+				const { fixedDiscount, percentageDiscount, price } = product;
+				let updatedPrice;
+				if (fixedDiscount != null) {
+					updatedPrice = price - fixedDiscount;
+				} else if (percentageDiscount != null) {
+					updatedPrice = price * (1 - percentageDiscount / 100);
+				} else {
+					updatedPrice = price; // No discounts applied
+				}
+				const meanRating = await Review.aggregate([
+					{ $match: { brand: brandId } },
+					{
+						$group: {
+							_id: '$brand',
+							averageRating: { $avg: '$rating' }
+						}
+					}
+				]);
+
+				if (meanRating.length > 0) {
+					productsWithRating.push({
+						product,
+						updatedPrice,
+						meanRating: meanRating[0].averageRating
+					});
+				} else {
+					// No reviews for the brand
+					productsWithRating.push({
+						product,
+						updatedPrice,
+						meanRating: 0
+					});
+				}
+			}
 			res.status(200).json({
 				success: true,
 				message: 'تم جلب جميع المنتجات التي تملك عرض ',
-				products
+				products: productsWithRating
 			});
 		} else {
 			res.status(200).json({

@@ -82,17 +82,55 @@ exports.getSellerProducts = async (req, res, next) => {
 		const sellerId = req.params.id;
 		const products = await Product.find({ seller: sellerId });
 		const seller = await Seller.findById(sellerId);
+		let productsWithRating = [];
 		if (products.length > 0) {
+			for (const product of products) {
+				const brandId = product.brand;
+				const { fixedDiscount, percentageDiscount, price } = product;
+				let updatedPrice;
+				if (fixedDiscount != null) {
+					updatedPrice = price - fixedDiscount;
+				} else if (percentageDiscount != null) {
+					updatedPrice = price * (1 - percentageDiscount / 100);
+				} else {
+					updatedPrice = price; // No discounts applied
+				}
+				const meanRating = await Review.aggregate([
+					{ $match: { brand: brandId } },
+					{
+						$group: {
+							_id: '$brand',
+							averageRating: { $avg: '$rating' }
+						}
+					}
+				]);
+
+				if (meanRating.length > 0) {
+					productsWithRating.push({
+						product,
+						updatedPrice,
+						meanRating: meanRating[0].averageRating
+					});
+				} else {
+					// No reviews for the brand
+					productsWithRating.push({
+						product,
+						updatedPrice,
+						meanRating: 0
+					});
+				}
+			}
 			res.status(200).json({
 				success: true,
 				message: 'تم جلب جميع منتجات هذا المتجر',
-				products,
+				products: productsWithRating,
 				seller
 			});
 		} else {
 			res.status(200).json({
 				success: false,
-				message: 'لا يوجد اي منتجات لهذا المتجر'
+				message: 'لا يوجد اي منتجات لهذا المتجر',
+				seller
 			});
 		}
 	} catch (error) {
