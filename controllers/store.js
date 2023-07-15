@@ -138,3 +138,11 @@ exports.getSellerProducts = async (req, res, next) => {
 		next(error);
 	}
 };
+
+exports.getSellerOrders = async (req, res, next) => {
+	try {
+		const userId = req.user._id;
+	} catch (error) {
+		next(error);
+	}
+};

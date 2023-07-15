@@ -63,7 +63,7 @@ exports.updateInfo = async (req, res, next) => {
 		const user = await User.findById(userId);
 
 		const { fullName, storeName, location, paymentMethod, wepayCode, oldPassword, newPassword } = req.body;
-		const methods = JSON.parse(paymentMethod);
+		const methods = paymentMethod ? JSON.parse(paymentMethod) : undefined;
 		const isPasswordValid = await user.validatePassword(oldPassword);
 		if (!isPasswordValid) {
 			return res.status(200).json({ success: false, message: 'كلمة السر غير صحيحة لم يتم تعديل البيانات' });

@@ -7,6 +7,7 @@ const tf = require('@tensorflow/tfjs');
 const fs = require('fs');
 const { recommender } = require('../util/recommender');
 const Review = require('../models/review');
+const Order = require('../models/order');
 function calculateDistance(lat1, lon1, lat2, lon2) {
 	const R = 6371; // Radius of the Earth in kilometers
 	const dLat = (lat2 - lat1) * (Math.PI / 180); // Convert to radians
@@ -372,6 +373,19 @@ exports.getOffers = async (req, res, next) => {
 				message: 'لا يوجد اي منتجات عليها عرض او تخفيض'
 			});
 		}
+	} catch (error) {
+		next(error);
+	}
+};
+
+exports.myPurchase = async (req, res, next) => {
+	try {
+		const userId = req.user._id;
+		const orders = await Order.find({ user: userId });
+		if (orders.length == 0) {
+			return res.status(200).json({ success: false, message: 'لا يوجد اي منتجات لعرضها' });
+		}
+		res.status(200).json({ success: true, message: 'تم جلب جميع الطلبات ', orders });
 	} catch (error) {
 		next(error);
 	}

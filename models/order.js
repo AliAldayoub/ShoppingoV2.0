@@ -9,12 +9,16 @@ const orderSchema = new Schema(
 			required: true
 		},
 		deliveryStatus: {
-			type: Boolean,
-			required: true
+			type: Boolean
 		},
-		products: {
-			type: Array,
-			required: true
+		wepayStatus: {
+			type: Boolean
+		},
+		wepayItems: {
+			type: Array
+		},
+		onDeliveryItems: {
+			type: Array
 		},
 		details: {
 			firstName: {

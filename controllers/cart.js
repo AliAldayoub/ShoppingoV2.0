@@ -152,7 +152,7 @@ exports.getCart = async (req, res, next) => {
 exports.deliveryOrder = async (req, res, next) => {
 	try {
 		const userId = req.user._id;
-		const { firstName, lastName, middleName, email, phoneNumber, city, address, products } = req.body;
+		const { firstName, lastName, middleName, email, phoneNumber, city, address, onDeliveryItems } = req.body;
 		const order = new Order({
 			user: userId,
 			deliveryStatus: false,
@@ -165,10 +165,45 @@ exports.deliveryOrder = async (req, res, next) => {
 				city,
 				address
 			},
-			products: products
+			onDeliveryItems: onDeliveryItems
 		});
 		order.save();
 		res.status(201).json({ success: true, message: 'تم اضافة الطلبية', order });
+	} catch (error) {
+		next(error);
+	}
+};
+
+exports.wepayOrder = async (req, res, next) => {
+	try {
+		const userId = req.user._id;
+		const orderId = req.body.orderId;
+		const wepayItems = JSON.parse(req.body.wepayItems);
+		if (!orderId) {
+			const { firstName, lastName, middleName, email, phoneNumber, city, address } = req.body;
+			const order = new Order({
+				user: userId,
+				wepayStatus: true,
+				details: {
+					firstName,
+					lastName,
+					middleName,
+					email,
+					phoneNumber,
+					city,
+					address
+				},
+				wepayItems: wepayItems
+			});
+			order.save();
+			res.status(201).json({ success: true, message: 'تم اضافة الطلبية', order });
+		} else {
+			const order = await Order.findById(orderId);
+			order.wepayItems = wepayItems;
+			order.wepayStatus = true;
+			order.save();
+			res.status(201).json({ success: true, message: 'تم اضافة المنتجات للطلبية الخاصة بهذه العملية ', order });
+		}
 	} catch (error) {
 		next(error);
 	}
