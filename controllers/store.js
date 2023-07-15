@@ -2,6 +2,7 @@ const User = require('../models/user');
 const Seller = require('../models/seller');
 const Product = require('../models/product');
 const { uploadImage } = require('../util/backblazeB2');
+const Review = require('../models/review');
 
 exports.sellerRequest = async (req, res, next) => {
 	try {
