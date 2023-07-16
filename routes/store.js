@@ -33,4 +33,10 @@ router.put(
 );
 router.get('/getAllSeller', storeController.getAllSeller);
 router.get('/getSellerProducts/:id', storeController.getSellerProducts);
+router.get(
+	'/getSellerOrders',
+	authMiddleware.authenticateUser,
+	authMiddleware.authenticateSeller,
+	storeController.getSellerProducts
+);
 module.exports = router;

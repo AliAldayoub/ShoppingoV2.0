@@ -24,4 +24,6 @@ router.delete(
 	shopController.deleteProduct
 );
 router.post('/addReview/:id', authMiddleware.authenticateUser, shopController.addReview);
+router.post('/myPurchase', authMiddleware.authenticateUser, shopController.myPurchase);
+
 module.exports = router;
