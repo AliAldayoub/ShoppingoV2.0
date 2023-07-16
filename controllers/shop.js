@@ -381,7 +381,7 @@ exports.getOffers = async (req, res, next) => {
 exports.myPurchase = async (req, res, next) => {
 	try {
 		const userId = req.user._id;
-		const orders = await Order.find({ user: userId });
+		const orders = await Order.find({ user: userId }).populate('user');
 		if (orders.length == 0) {
 			return res.status(200).json({ success: false, message: 'لا يوجد اي منتجات لعرضها' });
 		}
