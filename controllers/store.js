@@ -1,5 +1,6 @@
 const User = require('../models/user');
 const Seller = require('../models/seller');
+const Order = require('../models/order');
 const Product = require('../models/product');
 const { uploadImage } = require('../util/backblazeB2');
 const Review = require('../models/review');
@@ -142,6 +143,25 @@ exports.getSellerProducts = async (req, res, next) => {
 exports.getSellerOrders = async (req, res, next) => {
 	try {
 		const userId = req.user._id;
+		const seller = await Seller.findOne({ user: userId });
+		const sellerId = seller._id.toString();
+		const orders = await Order.find({
+			$or: [
+				{ wepayItems: { $elemMatch: { seller: sellerId } } },
+				{ onDeliveryItems: { $elemMatch: { seller: sellerId } } }
+			]
+		}).populate('user');
+		// Remove other items where the seller doesn't match the sellerId
+		orders.forEach((order) => {
+			order.wepayItems = order.wepayItems.filter((item) => item.seller.toString() === sellerId);
+			order.onDeliveryItems = order.onDeliveryItems.filter((item) => item.seller.toString() === sellerId);
+		});
+
+		res.status(200).json({
+			success: true,
+			message: 'تم جلب جميع الطلبات الخاصة بهذا التاجر',
+			orders
+		});
 	} catch (error) {
 		next(error);
 	}

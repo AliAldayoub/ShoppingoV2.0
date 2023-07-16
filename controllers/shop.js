@@ -110,10 +110,10 @@ exports.getAllProduct = async (req, res, next) => {
 
 				// Calculate the updated price based on discounts (if any)
 				let updatedPrice;
-				if (fixedDiscount != null) {
+				if (fixedDiscount != undefined) {
 					updatedPrice = price - fixedDiscount;
-				} else if (percentageDiscount != null) {
-					updatedPrice = price * (1 - percentageDiscount / 100);
+				} else if (percentageDiscount != undefined) {
+					updatedPrice = price - price * (percentageDiscount / 100);
 				} else {
 					updatedPrice = price; // No discounts applied
 				}
@@ -124,10 +124,18 @@ exports.getAllProduct = async (req, res, next) => {
 				}
 			} else {
 				// Create a new entry for the brand if it doesn't exist
+				let updatedPrice;
+				if (fixedDiscount != undefined) {
+					updatedPrice = price - fixedDiscount;
+				} else if (percentageDiscount != undefined) {
+					updatedPrice = price * (1 - percentageDiscount / 100);
+				} else {
+					updatedPrice = price; // No discounts applied
+				}
 				const newEntry = {
 					brand,
 					shippestProduct: product,
-					price: fixedDiscount !== undefined ? price - fixedDiscount : price
+					price: updatedPrice
 				};
 
 				uniqueProducts.push(newEntry);

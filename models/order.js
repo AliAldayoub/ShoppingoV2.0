@@ -8,18 +8,36 @@ const orderSchema = new Schema(
 			ref: 'User',
 			required: true
 		},
-		deliveryStatus: {
-			type: Boolean
-		},
-		wepayStatus: {
-			type: Boolean
-		},
-		wepayItems: {
-			type: Array
-		},
-		onDeliveryItems: {
-			type: Array
-		},
+		wepayItems: [
+			{
+				item: {
+					type: Object
+				},
+				seller: {
+					type: mongoose.Schema.Types.ObjectId,
+					ref: 'Seller'
+				},
+				deliveryStatus: {
+					type: String,
+					default: false
+				}
+			}
+		],
+		onDeliveryItems: [
+			{
+				item: {
+					type: Object
+				},
+				seller: {
+					type: mongoose.Schema.Types.ObjectId,
+					ref: 'Seller'
+				},
+				deliveryStatus: {
+					type: String,
+					default: false
+				}
+			}
+		],
 		details: {
 			firstName: {
 				type: String,

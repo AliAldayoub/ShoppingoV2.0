@@ -153,9 +153,13 @@ exports.deliveryOrder = async (req, res, next) => {
 	try {
 		const userId = req.user._id;
 		const { firstName, lastName, middleName, email, phoneNumber, city, address, onDeliveryItems } = req.body;
+		// const onDeliveryItems = JSON.parse(req.body.onDeliveryItems);
+		const updatedOnDeliveryItems = onDeliveryItems.map((item) => ({
+			...item,
+			deliveryStatus: false
+		}));
 		const order = new Order({
 			user: userId,
-			deliveryStatus: false,
 			details: {
 				firstName,
 				lastName,
@@ -165,7 +169,7 @@ exports.deliveryOrder = async (req, res, next) => {
 				city,
 				address
 			},
-			onDeliveryItems: onDeliveryItems
+			onDeliveryItems: updatedOnDeliveryItems
 		});
 		order.save();
 		res.status(201).json({ success: true, message: 'تم اضافة الطلبية', order });
@@ -178,12 +182,16 @@ exports.wepayOrder = async (req, res, next) => {
 	try {
 		const userId = req.user._id;
 		const orderId = req.body.orderId;
-		const wepayItems = JSON.parse(req.body.wepayItems);
+		// const wepayItems = JSON.parse(req.body.wepayItems);
+		const wepayItems = req.body.wepayItems;
+		const updatedWepayItems = wepayItems.map((item) => ({
+			...item,
+			deliveryStatus: false
+		}));
 		if (!orderId) {
 			const { firstName, lastName, middleName, email, phoneNumber, city, address } = req.body;
 			const order = new Order({
 				user: userId,
-				wepayStatus: true,
 				details: {
 					firstName,
 					lastName,
@@ -193,14 +201,13 @@ exports.wepayOrder = async (req, res, next) => {
 					city,
 					address
 				},
-				wepayItems: wepayItems
+				wepayItems: updatedWepayItems
 			});
 			order.save();
 			res.status(201).json({ success: true, message: 'تم اضافة الطلبية', order });
 		} else {
 			const order = await Order.findById(orderId);
-			order.wepayItems = wepayItems;
-			order.wepayStatus = true;
+			order.wepayItems = updatedWepayItems;
 			order.save();
 			res.status(201).json({ success: true, message: 'تم اضافة المنتجات للطلبية الخاصة بهذه العملية ', order });
 		}

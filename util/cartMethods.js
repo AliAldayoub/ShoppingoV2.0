@@ -8,13 +8,13 @@ async function getCartDetails(cart) {
 	cart.items.forEach((item) => {
 		const sellerPaymentMethods = item.product.seller.paymentMethod;
 		if (sellerPaymentMethods.length === 1 && sellerPaymentMethods.includes('on delivery')) {
-			onDeliveryItems.push(item);
+			onDeliveryItems.push({ item, seller: item.product.seller._id });
 			onDeliveryItemsPrice += item.price;
 		} else if (sellerPaymentMethods.length === 1 && sellerPaymentMethods.includes('wepay')) {
-			wepayItems.push(item);
+			wepayItems.push({ item, seller: item.product.seller._id });
 			wepayItemsPrice += item.price;
 		} else {
-			restItems.push(item);
+			restItems.push({ item, seller: item.product.seller._id });
 			restItemsPrice += item.price;
 		}
 	});

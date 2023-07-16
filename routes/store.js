@@ -37,6 +37,6 @@ router.get(
 	'/getSellerOrders',
 	authMiddleware.authenticateUser,
 	authMiddleware.authenticateSeller,
-	storeController.getSellerProducts
+	storeController.getSellerOrders
 );
 module.exports = router;
