@@ -194,6 +194,7 @@ exports.getMapProduct = async (req, res, next) => {
 		const lat = req.query.lat;
 		const brand = req.query.brand;
 		const productId = req.params.id;
+
 		const brandProducts = await Product.find({ brand: brand }).populate('seller');
 
 		const sellers = brandProducts.map((brandProduct) => brandProduct.seller);
