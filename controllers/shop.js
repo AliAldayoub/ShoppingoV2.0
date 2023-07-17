@@ -4,6 +4,7 @@ const Seller = require('../models/seller');
 const Brand = require('../models/brand');
 const { uploadImage } = require('../util/backblazeB2');
 const tf = require('@tensorflow/tfjs');
+const path = require('path');
 const fs = require('fs');
 const { recommender } = require('../util/recommender');
 const Review = require('../models/review');
@@ -178,19 +179,24 @@ exports.getAllProduct = async (req, res, next) => {
 		next(error);
 	}
 };
-
-exports.getProduct = async (req, res, next) => {
+exports.getProductDetails = async (req, res, next) => {
 	try {
 		const productId = req.params.id;
+		const product = await Product.findById(productId);
+		res.status(200).json({ success: true, message: 'تم جلب تفاصيل هذا المنتج', product });
+	} catch (error) {
+		next(error);
+	}
+};
+exports.getMapProduct = async (req, res, next) => {
+	try {
 		const long = req.query.long;
 		const lat = req.query.lat;
-		const userId = req.user._id;
-		const shippestProduct = await Product.findById(productId);
-		const brandProducts = await Product.find({ brand: shippestProduct.brand }).populate('seller');
+		const brand = req.query.brand;
+		const productId = req.params.id;
+		const brandProducts = await Product.find({ brand: brand }).populate('seller');
 
-		console.log(brandProducts);
 		const sellers = brandProducts.map((brandProduct) => brandProduct.seller);
-		console.log(sellers);
 		const nearestSeller = findNearestSeller(lat, long, sellers);
 		const nearestProduct = brandProducts.find((brandProduct) => brandProduct.seller.equals(nearestSeller._id));
 
@@ -198,16 +204,33 @@ exports.getProduct = async (req, res, next) => {
 			return brandProduct.fixedDiscount || brandProduct.percentageDiscount;
 		});
 		const otherProducts = brandProducts.filter((brandProduct) => {
+			brandProductId = brandProduct._id.toString();
 			return (
-				!brandProduct._id.equals(shippestProduct._id) &&
-				!brandProduct._id.equals(nearestProduct._id) &&
+				!brandProductId.equals(productId) &&
+				!brandProductId.equals(nearestProduct._id) &&
 				!productsWithDiscount.includes(brandProduct)
 			);
 		});
+
+		res.status(200).json({
+			success: true,
+			message: 'تم جلب جميع البيانات بنجاح منعتذر عالتأخير ',
+			nearestProduct,
+			productsWithDiscount,
+			otherProducts
+		});
+	} catch (error) {
+		next(error);
+	}
+};
+exports.getSimilarProducts = async (req, res, next) => {
+	try {
+		const userId = req.user._id;
 		const users = await User.find();
 		const brands = await Brand.find();
 
-		const loadedModel = JSON.parse(fs.readFileSync('F:\\ShoppingoV2.0\\util\\model.json'));
+		const modelFilePath = path.join(__dirname, '..', 'util', 'model.json');
+		const loadedModel = JSON.parse(fs.readFileSync(modelFilePath));
 		const userMatrix = tf.tensor(loadedModel.userMatrixData);
 		const itemMatrix = tf.tensor(loadedModel.itemMatrixData);
 
@@ -260,18 +283,13 @@ exports.getProduct = async (req, res, next) => {
 		const recommendation = recommender(items, 10, ratingsData, isRated, userRatingsArray, itemMatrix);
 		res.status(200).json({
 			success: true,
-			message: 'تم جلب جميع البيانات بنجاح منعتذر عالتأخير ',
-			shippestProduct,
-			nearestProduct,
-			productsWithDiscount,
-			otherProducts,
+			message: 'تم جلب المنتجات المشابهة بنجاح منعتذر عالتأخير ',
 			recommendation
 		});
 	} catch (error) {
 		next(error);
 	}
 };
-
 exports.deleteProduct = async (req, res, next) => {
 	const productId = req.params.id;
 

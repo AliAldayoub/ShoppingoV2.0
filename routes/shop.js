@@ -16,7 +16,9 @@ router.post(
 );
 router.get('/getAllProduct', shopController.getAllProduct);
 router.get('/getOffers', shopController.getOffers);
-router.get('/getProduct/:id', authMiddleware.authenticateUser, shopController.getProduct);
+router.get('/getProductDetails/:id', authMiddleware.authenticateUser, shopController.getProductDetails);
+router.get('/getMapProduct/:id', authMiddleware.authenticateUser, shopController.getMapProduct);
+router.get('/getSimilarProducts', authMiddleware.authenticateUser, shopController.getSimilarProducts);
 router.delete(
 	'/deleteProduct/:id',
 	authMiddleware.authenticateUser,
