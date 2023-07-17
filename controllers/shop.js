@@ -182,8 +182,17 @@ exports.getAllProduct = async (req, res, next) => {
 exports.getProductDetails = async (req, res, next) => {
 	try {
 		const productId = req.params.id;
-		const product = await Product.findById(productId);
-		res.status(200).json({ success: true, message: 'تم جلب تفاصيل هذا المنتج', product });
+		const product = await Product.findById(productId).populate('seller');
+		const { fixedDiscount, percentageDiscount, price } = product;
+		let updatedPrice;
+		if (fixedDiscount != undefined) {
+			updatedPrice = price - fixedDiscount;
+		} else if (percentageDiscount != undefined) {
+			updatedPrice = price - price * (percentageDiscount / 100);
+		} else {
+			updatedPrice = price; // No discounts applied
+		}
+		res.status(200).json({ success: true, message: 'تم جلب تفاصيل هذا المنتج', product, updatedPrice });
 	} catch (error) {
 		next(error);
 	}
