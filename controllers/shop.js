@@ -224,6 +224,7 @@ exports.getMapProduct = async (req, res, next) => {
 		res.status(200).json({
 			success: true,
 			message: 'تم جلب جميع البيانات بنجاح منعتذر عالتأخير ',
+			shippestProduct,
 			nearestProduct,
 			productsWithDiscount,
 			otherProducts
