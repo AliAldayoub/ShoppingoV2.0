@@ -183,14 +183,13 @@ exports.getProductDetails = async (req, res, next) => {
 	try {
 		const productId = req.params.id;
 		const product = await Product.findById(productId).populate('seller');
-		const { fixedDiscount, percentageDiscount, price } = product;
 		let updatedPrice;
-		if (fixedDiscount != undefined) {
-			updatedPrice = price - fixedDiscount;
-		} else if (percentageDiscount != undefined) {
-			updatedPrice = price - price * (percentageDiscount / 100);
+		if (product.fixedDiscount != undefined) {
+			updatedPrice = product.price - product.fixedDiscount;
+		} else if (product.percentageDiscount != undefined) {
+			updatedPrice = product.price - product.price * (product.percentageDiscount / 100);
 		} else {
-			updatedPrice = price; // No discounts applied
+			updatedPrice = product.price; // No discounts applied
 		}
 		res.status(200).json({ success: true, message: 'تم جلب تفاصيل هذا المنتج', product, updatedPrice });
 	} catch (error) {
@@ -201,8 +200,9 @@ exports.getMapProduct = async (req, res, next) => {
 	try {
 		const long = req.query.long;
 		const lat = req.query.lat;
-		const brand = req.query.brand;
 		const productId = req.params.id;
+		const shippestProduct = await Product.findById(productId).populate('seller');
+		const brand = shippestProduct.brand;
 
 		const brandProducts = await Product.find({ brand: brand }).populate('seller');
 
@@ -214,10 +214,9 @@ exports.getMapProduct = async (req, res, next) => {
 			return brandProduct.fixedDiscount || brandProduct.percentageDiscount;
 		});
 		const otherProducts = brandProducts.filter((brandProduct) => {
-			brandProductId = brandProduct._id.toString();
 			return (
-				!brandProductId.equals(productId) &&
-				!brandProductId.equals(nearestProduct._id) &&
+				!brandProduct._id.equals(shippestProduct._id) &&
+				!brandProduct._id.equals(nearestProduct._id) &&
 				!productsWithDiscount.includes(brandProduct)
 			);
 		});
