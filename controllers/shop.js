@@ -292,7 +292,7 @@ exports.getSimilarProducts = async (req, res, next) => {
 		}
 		const recommendation = recommender(items, 10, ratingsData, isRated, userRatingsArray, itemMatrix);
 
-		let updatedReco = recommendation.filter((reco) => reco != null);
+		let updatedReco = await recommendation.filter((reco) => reco != null);
 		res.status(200).json({
 			success: true,
 			message: 'تم جلب المنتجات المشابهة بنجاح منعتذر عالتأخير ',
