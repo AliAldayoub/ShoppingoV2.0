@@ -293,6 +293,35 @@ exports.getSimilarProducts = async (req, res, next) => {
 		const recommendation = recommender(items, 10, ratingsData, isRated, userRatingsArray, itemMatrix);
 
 		let updatedReco = recommendation.filter((reco) => reco != null);
+		for (const product of updatedReco) {
+			let updatedPrice;
+			if (product.fixedDiscount != undefined) {
+				updatedPrice = product.price - product.fixedDiscount;
+			} else if (product.percentageDiscount != undefined) {
+				updatedPrice = product.price - product.price * (product.percentageDiscount / 100);
+			} else {
+				updatedPrice = product.price; // No discounts applied
+			}
+			product.updatedPrice = updatedPrice;
+			const brandId = product.brand;
+
+			const meanRating = await Review.aggregate([
+				{ $match: { brand: brandId } },
+				{
+					$group: {
+						_id: '$brand',
+						averageRating: { $avg: '$rating' }
+					}
+				}
+			]);
+
+			if (meanRating.length > 0) {
+				product.meanRating = meanRating[0].averageRating;
+			} else {
+				// No reviews for the brand
+				product.meanRating = 0;
+			}
+		}
 		res.status(200).json({
 			success: true,
 			message: 'تم جلب المنتجات المشابهة بنجاح منعتذر عالتأخير ',
