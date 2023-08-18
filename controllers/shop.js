@@ -304,8 +304,8 @@ exports.getSimilarProducts = async (req, res, next) => {
 				updatedPrice = product.price; // No discounts applied
 			}
 			const brandId = product.brand;
-			let productMeanRating;
-			const meanRating = await Review.aggregate([
+			let meanRating;
+			const meanRating1 = await Review.aggregate([
 				{ $match: { brand: brandId } },
 				{
 					$group: {
@@ -315,13 +315,13 @@ exports.getSimilarProducts = async (req, res, next) => {
 				}
 			]);
 
-			if (meanRating.length > 0) {
-				productMeanRating = meanRating[0].averageRating;
+			if (meanRating1.length > 0) {
+				meanRating = meanRating1[0].averageRating;
 			} else {
 				// No reviews for the brand
-				productMeanRating = 0;
+				meanRating = 0;
 			}
-			recommendationFinal.push({ product, updatedPrice, productMeanRating });
+			recommendationFinal.push({ product, updatedPrice, meanRating });
 		}
 		res.status(200).json({
 			success: true,
