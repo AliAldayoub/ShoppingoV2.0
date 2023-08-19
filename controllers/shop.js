@@ -391,7 +391,7 @@ exports.getOffers = async (req, res, next) => {
 	try {
 		const products = await Product.find({
 			$or: [
-				{ fixedDiscount: { $ne: null } },
+				
 				{ percentageDiscount: { $ne: null } },
 				{ fixedDiscount: { $ne: 0 } }
 			]
